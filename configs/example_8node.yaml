@@ -1,0 +1,21 @@
+# 8-node network configuration
+# 3 anchors + 5 unknowns
+
+network:
+  n_nodes: 8
+  n_anchors: 3
+
+optimization:
+  use_adaptive_lm: true
+  use_line_search: false  # Line search slows convergence
+  max_iterations: 100
+  lm_initial_lambda: 0.001
+  gradient_tol: 1.0e-10
+  cost_tol: 1.0e-12
+
+measurements:
+  measurement_std: 0.01  # 1cm noise
+
+output:
+  verbose: true
+  plot_results: true

@@ -1,0 +1,22 @@
+# 30-node network configuration
+# 5 anchors + 25 unknowns
+# Achieves 18.5mm RMSE
+
+network:
+  n_nodes: 30
+  n_anchors: 5
+
+optimization:
+  use_adaptive_lm: true
+  use_line_search: false  # Line search slows convergence
+  max_iterations: 100
+  lm_initial_lambda: 0.001
+  gradient_tol: 1.0e-8
+  cost_tol: 1.0e-12
+
+measurements:
+  measurement_std: 0.01  # 1cm noise
+
+output:
+  verbose: true
+  plot_results: true
