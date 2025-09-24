@@ -1,10 +1,12 @@
-# 30-node network configuration
-# 5 anchors + 25 unknowns
-# Achieves 18.5mm RMSE
+# 31-node network configuration
+# 5 anchors + 26 unknowns
+# Custom: 85x85m area, seed 22
 
 network:
-  n_nodes: 30
+  n_nodes: 31
   n_anchors: 5
+  area_size: 85
+  random_seed: 22
 
 optimization:
   use_adaptive_lm: true

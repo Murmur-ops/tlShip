@@ -1,0 +1,44 @@
+# Generic network configuration
+# Can handle any number of nodes, anchors, and area size
+
+network:
+  n_nodes: 31          # Total number of nodes
+  n_anchors: 5         # Number of anchor nodes (with known positions)
+  area_size: 85        # Size of square area in meters (85x85m)
+  random_seed: 22      # Random seed for reproducibility
+
+  # Anchor placement strategy (optional)
+  anchor_placement: "corners_and_center"  # Options: "corners_and_center", "perimeter", "grid", "custom"
+
+  # Node distribution
+  node_margin: 5.0     # Minimum distance from edges (meters)
+  connectivity_radius: 40.0  # Maximum range for measurements
+
+optimization:
+  use_adaptive_lm: true
+  use_line_search: false
+  max_iterations: 100
+  lm_initial_lambda: 0.001
+  gradient_tol: 1.0e-8
+  cost_tol: 1.0e-12
+
+  # Adaptive parameters
+  lm_lambda_increase: 10.0
+  lm_lambda_decrease: 10.0
+
+measurements:
+  measurement_std: 0.001  # 1mm measurement noise
+  connectivity_radius: 40.0  # Override based on area size if needed
+  min_measurements_per_node: 3  # Minimum connectivity requirement
+
+noise:
+  preset: "ideal"      # Options: "ideal", "clean", "realistic", "harsh"
+  enable_noise: false  # No noise for ideal conditions
+  random_seed: 22      # Match network seed for reproducibility
+
+output:
+  verbose: true
+  plot_results: true
+  save_convergence: true
+  save_positions: true
+  output_dir: "./results/"

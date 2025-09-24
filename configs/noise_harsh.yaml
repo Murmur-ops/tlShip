@@ -1,0 +1,104 @@
+# Harsh environment noise configuration
+# Challenging conditions for stress testing
+# Expected: 200-500mm RMSE for 30-node system
+
+network:
+  n_nodes: 30
+  n_anchors: 5
+
+optimization:
+  use_adaptive_lm: true
+  use_line_search: false
+  max_iterations: 150  # More iterations needed
+  lm_initial_lambda: 0.001
+  gradient_tol: 1.0e-7  # Relax tolerance
+  cost_tol: 1.0e-10
+
+measurements:
+  measurement_std: 0.05  # 50mm base
+
+noise:
+  preset: "harsh"
+  enable_noise: true
+  random_seed: null  # Random each time
+
+  # Poor SNR conditions
+  thermal:
+    enabled: true
+    snr_db: 10.0  # Low SNR
+    bandwidth_mhz: 500.0
+    noise_figure_db: 10.0  # Poor receiver
+
+  # Significant distance effects
+  distance_dependent:
+    enabled: true
+    coefficient: 0.005  # 5mm per sqrt(meter)
+    min_std_m: 0.005
+
+  # Low resolution ADC
+  quantization:
+    enabled: true
+    adc_bits: 10
+    full_scale_range_m: 100.0
+
+  # High clock jitter
+  clock_jitter:
+    enabled: true
+    allan_deviation_ps: 500.0
+    integration_time_s: 1.0
+
+  # Significant multipath
+  multipath:
+    enabled: true
+    nlos_probability: 0.3  # 30% NLOS
+    bias_range_m: [0.0, 2.0]  # Large bias
+    excess_std_factor: 5.0
+
+  # Heavy shadowing
+  shadowing:
+    enabled: true
+    std_db: 8.0
+    correlation_distance_m: 5.0
+
+  # Large frequency offset
+  frequency_offset:
+    enabled: true
+    max_offset_ppb: 50.0
+    temperature_coefficient_ppb_per_c: 2.0
+
+  # Poor oscillator
+  phase_noise:
+    enabled: true
+    phase_noise_dbc_per_hz: -60.0
+    corner_frequency_hz: 1000.0
+
+  # Poor calibration
+  antenna_delay:
+    enabled: true
+    calibration_error_std_ps: 200.0
+    temperature_coefficient_ps_per_c: 5.0
+
+  # Environmental challenges
+  node_motion:
+    enabled: true
+    velocity_std_mps: 0.1
+    max_velocity_mps: 1.0
+
+  temperature_drift:
+    enabled: true
+    temperature_range_c: [-10.0, 50.0]
+    drift_rate_c_per_hour: 5.0
+
+  doppler:
+    enabled: true
+    max_velocity_mps: 1.0
+    carrier_freq_ghz: 6.5
+
+  interference:
+    enabled: true
+    sinr_db: 15.0
+    burst_probability: 0.01
+
+output:
+  verbose: true
+  plot_results: true

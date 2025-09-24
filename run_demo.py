@@ -176,6 +176,8 @@ def run_demo(config_path=None, n_nodes=30):
         config = EnhancedFTLConfig(
             n_nodes=n_nodes,
             n_anchors=n_anchors,
+            area_size=yaml_config['network'].get('area_size', 50.0),
+            random_seed=yaml_config['network'].get('random_seed', None),
             use_adaptive_lm=yaml_config['optimization']['use_adaptive_lm'],
             use_line_search=yaml_config['optimization'].get('use_line_search', False),
             max_iterations=yaml_config['optimization']['max_iterations'],

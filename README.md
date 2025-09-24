@@ -1,6 +1,6 @@
 # Time-Localization (TL) System
 
-Production-ready distributed localization and time synchronization achieving **18.5mm RMSE** accuracy.
+Production-ready distributed localization and time synchronization achieving **18.5mm RMSE** accuracy with comprehensive noise modeling for realistic simulations.
 
 ## Performance
 
@@ -36,13 +36,30 @@ The demo generates two visualization files:
 1. **convergence.png**: Shows position RMSE and time offset convergence
 2. **positions.png**: Shows estimated vs actual positions
 
+## Noise Model (NEW!)
+
+The system now includes a comprehensive noise model for realistic testing:
+
+```bash
+# Test with different noise levels
+python test_30node_system.py ideal       # No noise: 18.5mm RMSE
+python test_30node_system.py realistic   # Typical UWB: ~1.7m RMSE
+python test_30node_system.py harsh       # Challenging: ~3m RMSE
+
+# Analyze noise impact
+python analyze_noise_impact.py
+```
+
+See [NOISE_MODEL.md](NOISE_MODEL.md) for detailed documentation.
+
 ## Files
 
 - `ftl_enhanced.py`: Main FTL solver with Adaptive LM
 - `test_30node_system.py`: 30-node test that achieves 18.5mm
 - `run_demo.py`: Demo script with YAML support and visualizations
+- `ftl/noise_model.py`: Comprehensive noise model implementation
 - `ftl/`: Core optimization algorithms (Adaptive LM, line search)
-- `configs/`: Example YAML configurations
+- `configs/`: Example YAML configurations and noise presets
 
 ## YAML Configuration
 

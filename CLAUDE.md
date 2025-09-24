@@ -16,10 +16,28 @@ python run_demo.py --config configs/example_30node.yaml
 python run_demo.py --config configs/example_8node.yaml
 ```
 
-### Testing
+### Testing with Noise Model
 ```bash
-# Run the 30-node test that verifies 18.5mm RMSE performance
-python test_30node_system.py
+# Test with different noise presets
+python test_30node_system.py ideal       # No noise (~18.5mm RMSE)
+python test_30node_system.py clean       # Lab conditions
+python test_30node_system.py realistic   # Typical deployment
+python test_30node_system.py harsh       # Challenging environment
+
+# Compare all noise presets
+python test_30node_system.py --compare
+
+# Validate noise model
+python test_noise_validation.py
+
+# Analyze noise impact
+python analyze_noise_impact.py
+```
+
+### Legacy Testing
+```bash
+# Run the original 30-node test
+python test_30node_system.py ideal
 ```
 
 ### Dependencies
@@ -43,6 +61,9 @@ The Time-Localization (TL) system is a distributed localization and time synchro
 - `ftl/optimization/`: Optimization algorithms
   - `adaptive_lm.py`: Adaptive Levenberg-Marquardt implementation
   - `line_search.py`: Line search methods (Armijo, Wolfe)
+- `ftl/noise_model.py`: Comprehensive noise model for realistic simulations
+  - Thermal, multipath, hardware, and environmental noise sources
+  - Configurable presets: ideal, clean, realistic, harsh
 - `ftl/`: Core FTL algorithms and utilities for factors, solving, metrics, and initialization
 
 ### Configuration System

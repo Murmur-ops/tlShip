@@ -1,18 +1,36 @@
 """
 Test 30-node FTL system with 5 anchors over 50x50m area
+Now with comprehensive noise model support
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 from ftl_enhanced import EnhancedFTL, EnhancedFTLConfig
+from ftl.noise_model import NoiseConfig, NoiseGenerator, NoisePreset, create_preset_config
+from typing import Optional
 
 
 class Large30NodeFTL(EnhancedFTL):
-    """Extended FTL for larger network"""
+    """Extended FTL for larger network with noise model support"""
+
+    def __init__(self, config: EnhancedFTLConfig = None, noise_config: Optional[NoiseConfig] = None):
+        """Initialize with optional noise configuration
+
+        Args:
+            config: FTL configuration
+            noise_config: Noise model configuration (None for legacy behavior)
+        """
+        # Set noise configuration before parent init (which calls _setup_network)
+        self.noise_config = noise_config
+        self.noise_generator = NoiseGenerator(noise_config) if noise_config else None
+        # Now call parent init
+        super().__init__(config)
 
     def _setup_network(self):
-        """Create 30-node network over 50x50m area"""
-        area_size = 50.0
+        """Create network over specified area"""
+        # Get area size and seed from config if available
+        area_size = getattr(self.config, 'area_size', 50.0)
+        custom_seed = getattr(self.config, 'random_seed', None)
 
         # Generate positions
         self.true_positions = np.zeros((self.config.n_nodes, 2))
@@ -24,8 +42,8 @@ class Large30NodeFTL(EnhancedFTL):
         self.true_positions[3] = [area_size, area_size]  # Top-right
         self.true_positions[4] = [area_size/2, area_size/2]  # Center
 
-        # 25 Unknown nodes - distributed across area
-        np.random.seed(42)  # For reproducibility
+        # Unknown nodes - distributed across area
+        np.random.seed(custom_seed if custom_seed is not None else 42)  # For reproducibility
         for i in range(5, self.config.n_nodes):
             # Random position with minimum distance from edges
             margin = 5.0
@@ -35,7 +53,7 @@ class Large30NodeFTL(EnhancedFTL):
             ]
 
         # Initialize states with error
-        np.random.seed(43)  # Different seed for initial errors
+        np.random.seed((custom_seed + 1) if custom_seed is not None else 43)  # Different seed for initial errors
         self.states = np.zeros((self.config.n_nodes, 3))  # [x, y, clock_bias]
 
         for i in range(self.config.n_nodes):
@@ -52,7 +70,7 @@ class Large30NodeFTL(EnhancedFTL):
         self._generate_measurements()
 
     def _generate_measurements(self):
-        """Generate distance measurements with connectivity radius"""
+        """Generate distance measurements with connectivity radius and noise model"""
         self.measurements = []
         connectivity_radius = 30.0  # Only measure within 30m
 
@@ -62,26 +80,43 @@ class Large30NodeFTL(EnhancedFTL):
 
                 # Only create measurement if within connectivity radius
                 if true_dist <= connectivity_radius:
-                    # Add small measurement noise for realism
-                    noise = np.random.normal(0, 0.001)  # 1mm noise
-                    measured_dist = true_dist + noise
+                    if self.noise_generator:
+                        # Use comprehensive noise model
+                        measured_dist, measurement_std = self.noise_generator.add_measurement_noise(
+                            true_dist, i, j,
+                            position_i=self.true_positions[i],
+                            position_j=self.true_positions[j]
+                        )
+                    else:
+                        # Legacy behavior: simple Gaussian noise
+                        noise = np.random.normal(0, 0.001)  # 1mm noise
+                        measured_dist = true_dist + noise
+                        measurement_std = self.config.measurement_std
 
                     self.measurements.append({
                         'i': i,
                         'j': j,
                         'range': measured_dist,
-                        'std': self.config.measurement_std
+                        'std': measurement_std
                     })
 
         print(f"Created {len(self.measurements)} measurements (connectivity radius: {connectivity_radius}m)")
+        if self.noise_generator:
+            preset_name = self.noise_config.preset.value if self.noise_config.preset else "custom"
+            print(f"Using noise model: {preset_name}")
 
 
-def test_30_node_system():
-    """Test 30-node system with visualization"""
+def test_30_node_system(noise_preset: str = "ideal"):
+    """Test 30-node system with configurable noise
+
+    Args:
+        noise_preset: One of "ideal", "clean", "realistic", "harsh"
+    """
     print("="*60)
     print("30-Node FTL System Test")
     print("Nodes: 30 (5 anchors + 25 unknowns)")
     print("Area: 50m × 50m")
+    print(f"Noise preset: {noise_preset.upper()}")
     print("="*60)
 
     # Configure system
@@ -93,12 +128,19 @@ def test_30_node_system():
         max_iterations=100,
         lm_initial_lambda=1e-3,
         gradient_tol=1e-8,
-        measurement_std=0.01,  # 1cm
+        measurement_std=0.01,  # 1cm (used only if no noise model)
         verbose=True
     )
 
+    # Create noise configuration
+    if noise_preset.lower() != "legacy":
+        noise_config = create_preset_config(noise_preset)
+        noise_config.random_seed = 42  # For reproducibility
+    else:
+        noise_config = None  # Use legacy simple noise
+
     # Create and run system
-    ftl = Large30NodeFTL(config)
+    ftl = Large30NodeFTL(config, noise_config)
 
     # Print initial errors
     print("\nInitial Errors:")
@@ -241,5 +283,80 @@ def test_30_node_system():
     return ftl
 
 
+def test_noise_comparison():
+    """Test system with different noise presets and compare performance"""
+    print("\n" + "="*60)
+    print("NOISE MODEL COMPARISON TEST")
+    print("="*60 + "\n")
+
+    presets = ["ideal", "clean", "realistic", "harsh"]
+    results = {}
+
+    for preset in presets:
+        print(f"\n{'='*40}")
+        print(f"Testing with {preset.upper()} noise preset")
+        print('='*40)
+
+        # Configure system
+        config = EnhancedFTLConfig(
+            n_nodes=30,
+            n_anchors=5,
+            use_adaptive_lm=True,
+            use_line_search=False,
+            max_iterations=100,
+            lm_initial_lambda=1e-3,
+            gradient_tol=1e-8,
+            verbose=False  # Less verbose for comparison
+        )
+
+        # Create noise configuration
+        noise_config = create_preset_config(preset)
+        noise_config.random_seed = 42  # Same seed for fair comparison
+
+        # Create and run system
+        ftl = Large30NodeFTL(config, noise_config)
+
+        # Run optimization
+        ftl.run()
+
+        # Get final errors
+        final_pos_rmse = ftl.position_rmse_history[-1] if ftl.position_rmse_history else 999
+        final_time_rmse = ftl.time_rmse_history[-1] if ftl.time_rmse_history else 999
+
+        results[preset] = {
+            'position_rmse_mm': final_pos_rmse * 1000,
+            'time_rmse_ns': final_time_rmse,
+            'iterations': len(ftl.position_rmse_history)
+        }
+
+        print(f"Final Position RMSE: {final_pos_rmse*1000:.2f}mm")
+        print(f"Final Time RMSE: {final_time_rmse:.3f}ns")
+
+    # Print comparison table
+    print("\n" + "="*60)
+    print("PERFORMANCE COMPARISON")
+    print("="*60)
+    print(f"{'Preset':<12} {'Position RMSE':<15} {'Time RMSE':<12} {'Iterations':<10}")
+    print("-"*60)
+    for preset, result in results.items():
+        print(f"{preset.upper():<12} {result['position_rmse_mm']:<15.2f}mm "
+              f"{result['time_rmse_ns']:<12.3f}ns {result['iterations']:<10}")
+
+    return results
+
+
 if __name__ == "__main__":
-    ftl = test_30_node_system()
+    import sys
+
+    # Check command line arguments
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--compare":
+            # Run comparison test
+            test_noise_comparison()
+        else:
+            # Run with specified noise preset
+            noise_preset = sys.argv[1]
+            ftl = test_30_node_system(noise_preset)
+    else:
+        # Default: run with ideal noise (original behavior)
+        ftl = test_30_node_system("ideal")

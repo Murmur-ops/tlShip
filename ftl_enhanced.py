@@ -22,6 +22,8 @@ class EnhancedFTLConfig:
     # Network
     n_nodes: int = 8
     n_anchors: int = 3
+    area_size: float = 50.0  # Size of square area in meters
+    random_seed: int = None  # Random seed for reproducibility
 
     # Optimization method
     use_adaptive_lm: bool = True

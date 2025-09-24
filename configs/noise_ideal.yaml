@@ -1,0 +1,38 @@
+# Ideal noise configuration - No noise (original behavior)
+# Achieves ~18.5mm RMSE for 30-node system
+
+network:
+  n_nodes: 30
+  n_anchors: 5
+
+optimization:
+  use_adaptive_lm: true
+  use_line_search: false
+  max_iterations: 100
+  lm_initial_lambda: 0.001
+  gradient_tol: 1.0e-8
+  cost_tol: 1.0e-12
+
+measurements:
+  measurement_std: 0.001  # 1mm fallback
+
+noise:
+  preset: "ideal"  # No noise
+  enable_noise: false
+
+  # All noise sources disabled
+  thermal:
+    enabled: false
+
+  distance_dependent:
+    enabled: false
+
+  multipath:
+    enabled: false
+
+  shadowing:
+    enabled: false
+
+output:
+  verbose: true
+  plot_results: true

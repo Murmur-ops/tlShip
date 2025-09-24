@@ -1,0 +1,96 @@
+# Realistic UWB deployment noise configuration
+# Typical indoor/outdoor environment
+# Expected: 50-200mm RMSE for 30-node system
+
+network:
+  n_nodes: 30
+  n_anchors: 5
+
+optimization:
+  use_adaptive_lm: true
+  use_line_search: false
+  max_iterations: 100
+  lm_initial_lambda: 0.001
+  gradient_tol: 1.0e-8
+  cost_tol: 1.0e-12
+
+measurements:
+  measurement_std: 0.01  # 10mm base
+
+noise:
+  preset: "realistic"
+  enable_noise: true
+  random_seed: null  # Random each time
+
+  # Typical thermal noise
+  thermal:
+    enabled: true
+    snr_db: 20.0  # Moderate SNR
+    bandwidth_mhz: 500.0
+    noise_figure_db: 6.0  # Typical receiver
+
+  # Distance-dependent effects
+  distance_dependent:
+    enabled: true
+    coefficient: 0.001  # 1mm per sqrt(meter)
+    min_std_m: 0.001
+
+  # Standard ADC
+  quantization:
+    enabled: true
+    adc_bits: 12
+    full_scale_range_m: 100.0
+
+  # Typical clock performance
+  clock_jitter:
+    enabled: true
+    allan_deviation_ps: 100.0
+    integration_time_s: 1.0
+
+  # Some multipath present
+  multipath:
+    enabled: true
+    nlos_probability: 0.1  # 10% NLOS
+    bias_range_m: [0.0, 0.5]
+    excess_std_factor: 2.0
+
+  # Typical shadowing
+  shadowing:
+    enabled: true
+    std_db: 3.0
+    correlation_distance_m: 10.0
+
+  # Moderate frequency offset
+  frequency_offset:
+    enabled: true
+    max_offset_ppb: 10.0
+    temperature_coefficient_ppb_per_c: 0.5
+
+  # Typical phase noise
+  phase_noise:
+    enabled: true
+    phase_noise_dbc_per_hz: -80.0
+    corner_frequency_hz: 1000.0
+
+  # Typical calibration errors
+  antenna_delay:
+    enabled: true
+    calibration_error_std_ps: 50.0
+    temperature_coefficient_ps_per_c: 2.0
+
+  # Minimal environmental effects
+  node_motion:
+    enabled: false  # Static deployment
+
+  temperature_drift:
+    enabled: false  # Short-term measurement
+
+  doppler:
+    enabled: false  # Static scenario
+
+  interference:
+    enabled: false  # Clean spectrum assumed
+
+output:
+  verbose: true
+  plot_results: true

@@ -1,0 +1,93 @@
+# Clean lab environment noise configuration
+# Minimal noise for controlled testing conditions
+# Expected: 20-50mm RMSE for 30-node system
+
+network:
+  n_nodes: 30
+  n_anchors: 5
+
+optimization:
+  use_adaptive_lm: true
+  use_line_search: false
+  max_iterations: 100
+  lm_initial_lambda: 0.001
+  gradient_tol: 1.0e-8
+  cost_tol: 1.0e-12
+
+measurements:
+  measurement_std: 0.005  # 5mm base
+
+noise:
+  preset: "clean"
+  enable_noise: true
+  random_seed: 42  # For reproducibility
+
+  # Minimal thermal noise
+  thermal:
+    enabled: true
+    snr_db: 30.0  # High SNR
+    bandwidth_mhz: 500.0
+    noise_figure_db: 3.0  # Low noise figure
+
+  # Very small distance-dependent noise
+  distance_dependent:
+    enabled: true
+    coefficient: 0.0005  # 0.5mm per sqrt(meter)
+    min_std_m: 0.001
+
+  # Minimal quantization
+  quantization:
+    enabled: true
+    adc_bits: 14  # High resolution ADC
+    full_scale_range_m: 100.0
+
+  # Low clock jitter
+  clock_jitter:
+    enabled: true
+    allan_deviation_ps: 10.0
+    integration_time_s: 1.0
+
+  # No multipath in controlled environment
+  multipath:
+    enabled: false
+
+  # Minimal shadowing
+  shadowing:
+    enabled: true
+    std_db: 1.0
+    correlation_distance_m: 10.0
+
+  # Low frequency offset
+  frequency_offset:
+    enabled: true
+    max_offset_ppb: 2.0
+    temperature_coefficient_ppb_per_c: 0.1
+
+  # Minimal phase noise
+  phase_noise:
+    enabled: true
+    phase_noise_dbc_per_hz: -90.0
+    corner_frequency_hz: 1000.0
+
+  # Low antenna calibration error
+  antenna_delay:
+    enabled: true
+    calibration_error_std_ps: 10.0
+    temperature_coefficient_ps_per_c: 0.5
+
+  # No environmental factors
+  node_motion:
+    enabled: false
+
+  temperature_drift:
+    enabled: false
+
+  doppler:
+    enabled: false
+
+  interference:
+    enabled: false
+
+output:
+  verbose: true
+  plot_results: true
