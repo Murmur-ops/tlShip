@@ -1,0 +1,31 @@
+# Custom configuration with user specifications
+# 31 nodes, 85x85m area, seed 22, no noise
+
+network:
+  n_nodes: 31
+  n_anchors: 5
+  area_size: 85.0  # 85x85m area
+  random_seed: 22  # Custom seed
+
+optimization:
+  use_adaptive_lm: true
+  use_line_search: false
+  max_iterations: 100
+  lm_initial_lambda: 0.001
+  gradient_tol: 1.0e-8
+  cost_tol: 1.0e-12
+
+measurements:
+  measurement_std: 0.001  # 1mm
+  connectivity_radius: 40.0  # Increased for larger area
+
+noise:
+  preset: "ideal"  # No noise as requested
+  enable_noise: false
+  random_seed: 22  # Match network seed
+
+output:
+  verbose: true
+  plot_results: true
+  save_convergence: true
+  save_positions: true

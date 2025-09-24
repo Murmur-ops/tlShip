@@ -90,6 +90,7 @@ class EnhancedFTL:
         self.time_rmse_history = []
         self.lambda_history = []
         self.alpha_history = []
+        self.state_history = []  # Track full state at each iteration
 
     def _setup_network(self):
         """Create network topology"""
@@ -461,6 +462,7 @@ class EnhancedFTL:
         pos_rmse, time_rmse = self.compute_errors()
         self.position_rmse_history.append(pos_rmse)
         self.time_rmse_history.append(time_rmse)
+        self.state_history.append(self.states.copy())
 
         if self.config.verbose:
             print(f"Initial: pos RMSE = {pos_rmse:.3f}m, time RMSE = {time_rmse:.3f}ns")
@@ -483,6 +485,7 @@ class EnhancedFTL:
             pos_rmse, time_rmse = self.compute_errors()
             self.position_rmse_history.append(pos_rmse)
             self.time_rmse_history.append(time_rmse)
+            self.state_history.append(self.states.copy())
 
             # Compute cost
             n_unknowns = self.config.n_nodes - self.config.n_anchors
